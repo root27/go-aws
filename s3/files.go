@@ -11,9 +11,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-func ConnectS3() (*s3.Client, error) {
+func ConnectS3(region string) (*s3.Client, error) {
 
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("eu-central-1"))
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 
 	if err != nil {
 		log.Fatal(err)
