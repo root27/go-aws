@@ -148,9 +148,9 @@ func (client *Client) DownloadObject(bucket string, object string, fileName stri
 	return nil
 }
 
-func (client *Client) UploadObject(bucket string, object string, fileName string) (err error) {
+func (client *Client) UploadObject(bucket string, filename string, file string) error {
 
-	file, err := os.Open(fileName)
+	fileData, err := os.Open(file)
 
 	if err != nil {
 		log.Fatal(err)
@@ -158,12 +158,12 @@ func (client *Client) UploadObject(bucket string, object string, fileName string
 		return err
 	}
 
-	defer file.Close()
+	defer fileData.Close()
 
 	input := &s3.PutObjectInput{
 		Bucket: aws.String(bucket),
-		Key:    aws.String(object),
-		Body:   file,
+		Key:    aws.String(filename),
+		Body:   fileData,
 	}
 
 	_, err = client.s3Client.PutObject(context.Background(), input)
