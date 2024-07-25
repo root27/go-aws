@@ -11,7 +11,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-func ConnectS3(region string) (*s3.Client, error) {
+type Client struct {
+	s3Client *s3.Client
+}
+
+func ConnectS3(region string) (*Client, error) {
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 
@@ -21,12 +25,14 @@ func ConnectS3(region string) (*s3.Client, error) {
 
 	client := s3.NewFromConfig(cfg)
 
-	return client, err
+	return &Client{
+		s3Client: client,
+	}, err
 }
 
-func ListBuckets(client *s3.Client) ([]string, error) {
+func (client *Client) ListBuckets() ([]string, error) {
 
-	output, err := client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
+	output, err := client.s3Client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 
 	if err != nil {
 		log.Fatal(err)
@@ -41,12 +47,12 @@ func ListBuckets(client *s3.Client) ([]string, error) {
 	return buckets, err
 }
 
-func ListObjects(client *s3.Client, bucket string) (objects []string, err error) {
+func (client *Client) ListObjects(bucket string) (objects []string, err error) {
 
 	input := &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucket)}
 
-	output, err := client.ListObjectsV2(context.Background(), input)
+	output, err := client.s3Client.ListObjectsV2(context.Background(), input)
 
 	if err != nil {
 		log.Fatal(err)
@@ -61,14 +67,14 @@ func ListObjects(client *s3.Client, bucket string) (objects []string, err error)
 
 }
 
-func GetObject(client *s3.Client, bucket string, object string) ([]byte, error) {
+func (client *Client) GetObject(bucket string, object string) ([]byte, error) {
 
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(object),
 	}
 
-	output, err := client.GetObject(context.Background(), input)
+	output, err := client.s3Client.GetObject(context.Background(), input)
 
 	if err != nil {
 		log.Fatal(err)
@@ -82,14 +88,14 @@ func GetObject(client *s3.Client, bucket string, object string) ([]byte, error) 
 
 }
 
-func DownloadObject(client *s3.Client, bucket string, object string, fileName string) (err error) {
+func (client *Client) DownloadObject(bucket string, object string, fileName string) (err error) {
 
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(object),
 	}
 
-	output, err := client.GetObject(context.Background(), input)
+	output, err := client.s3Client.GetObject(context.Background(), input)
 
 	if err != nil {
 		log.Fatal(err)
@@ -116,7 +122,7 @@ func DownloadObject(client *s3.Client, bucket string, object string, fileName st
 	return err
 }
 
-func UploadObject(client *s3.Client, bucket string, object string, fileName string) (err error) {
+func (client *Client) UploadObject(bucket string, object string, fileName string) (err error) {
 
 	file, err := os.Open(fileName)
 
@@ -132,7 +138,7 @@ func UploadObject(client *s3.Client, bucket string, object string, fileName stri
 		Body:   file,
 	}
 
-	_, err = client.PutObject(context.Background(), input)
+	_, err = client.s3Client.PutObject(context.Background(), input)
 
 	return err
 }
