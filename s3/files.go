@@ -21,13 +21,16 @@ func ConnectS3(region string) (*Client, error) {
 
 	if err != nil {
 		log.Fatal(err)
+
+		return nil, err
+
 	}
 
 	client := s3.NewFromConfig(cfg)
 
 	return &Client{
 		s3Client: client,
-	}, err
+	}, nil
 }
 
 func (client *Client) ListBuckets() ([]string, error) {
@@ -36,6 +39,8 @@ func (client *Client) ListBuckets() ([]string, error) {
 
 	if err != nil {
 		log.Fatal(err)
+
+		return nil, err
 	}
 
 	var buckets []string
@@ -44,7 +49,7 @@ func (client *Client) ListBuckets() ([]string, error) {
 		buckets = append(buckets, aws.ToString(bucket.Name))
 	}
 
-	return buckets, err
+	return buckets, nil
 }
 
 func (client *Client) ListObjects(bucket string) (objects []string, err error) {
@@ -56,6 +61,9 @@ func (client *Client) ListObjects(bucket string) (objects []string, err error) {
 
 	if err != nil {
 		log.Fatal(err)
+
+		return nil, err
+
 	}
 
 	for _, object := range output.Contents {
@@ -63,7 +71,7 @@ func (client *Client) ListObjects(bucket string) (objects []string, err error) {
 		objects = append(objects, aws.ToString(object.Key))
 	}
 
-	return objects, err
+	return objects, nil
 
 }
 
@@ -78,13 +86,20 @@ func (client *Client) GetObject(bucket string, object string) ([]byte, error) {
 
 	if err != nil {
 		log.Fatal(err)
+
+		return nil, err
 	}
 
 	defer output.Body.Close()
 
 	body, err := io.ReadAll(output.Body)
 
-	return body, err
+	if err != nil {
+
+		return nil, err
+	}
+
+	return body, nil
 
 }
 
@@ -99,6 +114,8 @@ func (client *Client) DownloadObject(bucket string, object string, fileName stri
 
 	if err != nil {
 		log.Fatal(err)
+
+		return err
 	}
 
 	defer output.Body.Close()
@@ -107,6 +124,8 @@ func (client *Client) DownloadObject(bucket string, object string, fileName stri
 
 	if err != nil {
 		log.Fatal(err)
+
+		return err
 	}
 
 	defer file.Close()
@@ -115,11 +134,18 @@ func (client *Client) DownloadObject(bucket string, object string, fileName stri
 
 	if err != nil {
 		log.Fatal(err)
+
+		return err
 	}
 
 	_, err = file.Write(body)
 
-	return err
+	if err != nil {
+
+		return err
+	}
+
+	return nil
 }
 
 func (client *Client) UploadObject(bucket string, object string, fileName string) (err error) {
@@ -128,6 +154,8 @@ func (client *Client) UploadObject(bucket string, object string, fileName string
 
 	if err != nil {
 		log.Fatal(err)
+
+		return err
 	}
 
 	defer file.Close()
@@ -140,5 +168,11 @@ func (client *Client) UploadObject(bucket string, object string, fileName string
 
 	_, err = client.s3Client.PutObject(context.Background(), input)
 
-	return err
+	if err != nil {
+
+		return err
+
+	}
+
+	return nil
 }
