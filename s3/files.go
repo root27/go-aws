@@ -20,7 +20,7 @@ func ConnectS3(region string) (*Client, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 
 		return nil, err
 
@@ -38,7 +38,7 @@ func (client *Client) ListBuckets() ([]string, error) {
 	output, err := client.s3Client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (client *Client) ListObjects(bucket string) (objects []string, err error) {
 	output, err := client.s3Client.ListObjectsV2(context.Background(), input)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 
 		return nil, err
 
@@ -85,7 +85,7 @@ func (client *Client) GetObject(bucket string, object string) ([]byte, error) {
 	output, err := client.s3Client.GetObject(context.Background(), input)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (client *Client) DownloadObject(bucket string, object string, fileName stri
 	output, err := client.s3Client.GetObject(context.Background(), input)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 
 		return err
 	}
@@ -123,7 +123,7 @@ func (client *Client) DownloadObject(bucket string, object string, fileName stri
 	file, err := os.Create(fileName)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 
 		return err
 	}
@@ -133,7 +133,7 @@ func (client *Client) DownloadObject(bucket string, object string, fileName stri
 	body, err := io.ReadAll(output.Body)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 
 		return err
 	}
@@ -153,7 +153,7 @@ func (client *Client) UploadObject(bucket string, filename string, file string) 
 	fileData, err := os.Open(file)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 
 		return err
 	}
